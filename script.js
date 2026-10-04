@@ -321,6 +321,9 @@ async function adminView(note) {
     <div class="msg" id="amsg">${note ? esc(note) : ""}</div>
     <div class="row"><button class="btn small" id="up">Upload</button>
     <button class="btn ghost small" id="hm">Back to home</button></div>
+    <button class="btn danger small" id="resetScores">
+    Reset All Judgements
+  </button>
   </div>
   <div class="card">
     <h2>Uploaded posters (${list.length})</h2>
@@ -330,6 +333,48 @@ async function adminView(note) {
         <button class="btn danger small" data-del="${p.id}">Delete</button></li>`).join("")}</ul>` : "<p class='note'>No posters yet.</p>"}
   </div>`;
   document.getElementById("hm").onclick = () => home();
+  document.getElementById("resetScores").onclick = async () => {
+    // reset code here/ STEP 6 — Ask for confirmation
+  const confirmReset = confirm(
+    "⚠️ RESET ALL JUDGEMENTS?\n\n" +
+    "This will permanently delete all marks given by ALL judges.\n\n" +
+    "Posters will NOT be deleted.\n\n" +
+    "Do you want to continue?"
+  );
+
+  // STEP 7 — Stop if Cancel is clicked
+  if (!confirmReset) return;
+
+  // STEP 8 — Disable button while resetting
+  const btn = document.getElementById("resetScores");
+  btn.disabled = true;
+  btn.textContent = "Resetting…";
+
+  try {
+
+    // STEP 9 — Delete all marks from Firebase
+    await dbDel("scores");
+
+    // STEP 10 — Clear scores stored in the browser
+    S.scores = {};
+
+    // STEP 11 — Show success message
+    alert("All judgements have been reset successfully.");
+
+    // STEP 12 — Reload organizer page
+    await adminView(
+      "All marks have been reset. Posters are ready for judging again."
+    );
+
+  } catch (e) {
+
+    // If something goes wrong
+    alert("Could not reset judgements: " + e.message);
+
+    btn.disabled = false;
+    btn.textContent = "Reset All Judgements";
+  }
+};
   document.getElementById("up").onclick = async () => {
     const files = [...document.getElementById("files").files];
     const msg = document.getElementById("amsg");
